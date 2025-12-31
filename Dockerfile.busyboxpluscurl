@@ -1,8 +1,15 @@
-# Use the official Alpine Linux image as a base
-FROM alpine:latest
 
-# Install curl
-RUN apk update && apk add curl
+FROM python:3.8
 
-# Set the entry point to bash for testing purposes
-ENTRYPOINT ["/bin/sh"]
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y curl
+
+COPY src/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ .
+
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+

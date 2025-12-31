@@ -8,6 +8,19 @@ from django.http import HttpResponse
 from django.utils import timezone
 import time
 
+
+start_time = time.time()
+startup_period = 10
+
+def readiness_check(request):
+    if time.time() < start_time + startup_period:
+        return HttpResponse("Not Ready", status=503)
+    return HttpResponse("Ready", status=200)
+  
+
+def liveness_probe(request):
+  return HttpResponse("OK", status=200)
+
 class IsCreatorOrReadOnly(permissions.BasePermission):
     """
     Object-level permission to only allow owners of an object to edit it.
@@ -29,7 +42,6 @@ class IsCreatorOrReadOnly(permissions.BasePermission):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAdminUser,)
@@ -56,3 +68,4 @@ class TodoViewSet(viewsets.ModelViewSet):
         user = self.request.user
         creator = user if user.is_authenticated else None
         serializer.save(creator=creator)
+
